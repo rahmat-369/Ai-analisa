@@ -2,12 +2,8 @@ export async function POST(req) {
   try {
     const { imageBase64 } = await req.json();
 
-    if (!imageBase64) {
-      return Response.json({ error: "Gambar tidak ada" });
-    }
-
     const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" +
+      "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" +
         process.env.GEMINI_API_KEY,
       {
         method: "POST",
@@ -18,22 +14,23 @@ export async function POST(req) {
           contents: [
             {
               parts: [
-                { text: "Balas dengan kata sukses" }
-              ],
-            },
-          ],
-        }),
+                {
+                  text: "Balas dengan kata sukses"
+                }
+              ]
+            }
+          ]
+        })
       }
     );
 
-    const text = await response.text();
+    const data = await response.json();
 
-    return Response.json({
-      status: response.status,
-      raw: text
-    });
+    return Response.json(data);
 
   } catch (error) {
     return Response.json({ error: error.message });
+  }
+}    return Response.json({ error: error.message });
   }
 }
