@@ -1,38 +1,39 @@
-const handleSubmit = async () => {
+export async function POST(req) {
   try {
-    if (!image) {
-      setResult("Pilih gambar dulu");
-      return;
+    const { imageBase64 } = await req.json();
+
+    if (!imageBase64) {
+      return Response.json({ error: "Gambar tidak ada" });
     }
 
-    setLoading(true);
-
-    const reader = new FileReader();
-    reader.readAsDataURL(image);
-
-    reader.onloadend = async () => {
-      try {
-        const base64 = reader.result.split(",")[1];
-
-        const res = await fetch("/api/analyze", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ imageBase64: base64 }),
-        });
-
-        const data = await res.json();
-
-        setResult(JSON.stringify(data));
-      } catch (err) {
-        setResult("Frontend error: " + err.message);
-      } finally {
-        setLoading(false);
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" +
+        process.env.GEMINI_API_KEY,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: "Balas dengan kata sukses" }
+              ],
+            },
+          ],
+        }),
       }
-    };
-  } catch (err) {
-    setResult("Error umum: " + err.message);
-    setLoading(false);
+    );
+
+    const text = await response.text();
+
+    return Response.json({
+      status: response.status,
+      raw: text
+    });
+
+  } catch (error) {
+    return Response.json({ error: error.message });
   }
-};
+}
