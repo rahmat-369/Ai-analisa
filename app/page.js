@@ -8,15 +8,20 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    if (!image) return;
+    if (!image) {
+      setResult("Pilih gambar dulu");
+      return;
+    }
 
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const reader = new FileReader();
-    reader.readAsDataURL(image);
-
-    reader.onloadend = async () => {
-      const base64 = reader.result.split(",")[1];
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(image);
+        reader.onload = () => resolve(reader.result.split(",")[1]);
+        reader.onerror = reject;
+      });
 
       const res = await fetch("/api/analyze", {
         method: "POST",
@@ -27,9 +32,13 @@ export default function Home() {
       });
 
       const data = await res.json();
-      setResult(data.result || data.error);
+
+      setResult(JSON.stringify(data));
+    } catch (err) {
+      setResult("Error: " + err.message);
+    } finally {
       setLoading(false);
-    };
+    }
   };
 
   return (
@@ -48,7 +57,9 @@ export default function Home() {
         {loading ? "Menganalisis..." : "Analisa"}
       </button>
 
-      <p style={{ marginTop: 20 }}>{result}</p>
+      <p style={{ marginTop: 20, wordBreak: "break-word" }}>
+        {result}
+      </p>
     </div>
   );
-        }
+          } 
