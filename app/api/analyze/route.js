@@ -22,10 +22,8 @@ export async function POST(req) {
       }
     );
 
-    const data = await res.json();
-console.log("API RESPONSE:", data);
-setResult(JSON.stringify(data));
-    
+    const data = await response.json();
+
     return Response.json({
       statusCode: response.status,
       fullResponse: data,
@@ -34,4 +32,4 @@ setResult(JSON.stringify(data));
   } catch (error) {
     return Response.json({ error: error.message });
   }
-      } 
+}
